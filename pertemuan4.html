@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pertemuan 4 - Direktori Kuliner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100">
+    <main class="mx-auto max-w-7xl space-y-6 px-4 py-8 md:px-8">
+      <section class="rounded-2xl border border-slate-700 bg-slate-900/60 p-6">
+        <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Pertemuan 4</p>
+        <h1 class="mt-2 text-2xl font-semibold md:text-3xl">Direktori Layanan Kuliner Nusantara</h1>
+        <p class="mt-2 text-sm text-slate-300 md:text-base">
+          Menampilkan data JSON dalam mode Guest (Card) dan Admin (Tabel), lengkap dengan Search + 2
+          Filter.
+        </p>
+      </section>
+
+      <section class="rounded-2xl border border-slate-700 bg-slate-900/70 p-4 md:p-6">
+        <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search nama layanan / id / kategori"
+            class="rounded-xl border border-slate-600 bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-cyan-300"
+          />
+
+          <select
+            id="categoryFilter"
+            class="rounded-xl border border-slate-600 bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-cyan-300"
+          ></select>
+
+          <select
+            id="cityFilter"
+            class="rounded-xl border border-slate-600 bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-cyan-300"
+          ></select>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button id="guestBtn" class="rounded-xl bg-cyan-400 px-3 py-2 text-sm font-medium text-slate-900">
+              Guest View
+            </button>
+            <button id="adminBtn" class="rounded-xl bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700">
+              Admin View
+            </button>
+          </div>
+        </div>
+        <p id="counterText" class="mt-3 text-xs text-slate-400"></p>
+      </section>
+
+      <section id="guestContainer" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></section>
+
+      <section id="adminContainer" class="hidden overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/70">
+        <div class="overflow-x-auto">
+          <table class="min-w-[980px] w-full text-left text-sm">
+            <thead class="bg-slate-800 text-slate-200">
+              <tr>
+                <th class="px-3 py-3">ID</th>
+                <th class="px-3 py-3">Nama Layanan</th>
+                <th class="px-3 py-3">Kategori</th>
+                <th class="px-3 py-3">Kota</th>
+                <th class="px-3 py-3">Harga</th>
+                <th class="px-3 py-3">Rating</th>
+                <th class="px-3 py-3">Status</th>
+                <th class="px-3 py-3">Jadwal</th>
+                <th class="px-3 py-3">Kontak</th>
+                <th class="px-3 py-3">Lokasi</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const searchInput = document.getElementById('searchInput')
+      const categoryFilter = document.getElementById('categoryFilter')
+      const cityFilter = document.getElementById('cityFilter')
+      const guestBtn = document.getElementById('guestBtn')
+      const adminBtn = document.getElementById('adminBtn')
+      const guestContainer = document.getElementById('guestContainer')
+      const adminContainer = document.getElementById('adminContainer')
+      const adminTableBody = document.getElementById('adminTableBody')
+      const counterText = document.getElementById('counterText')
+
+      let allData = []
+      let viewMode = 'guest'
+
+      const formatRupiah = (value) =>
+        new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR',
+          maximumFractionDigits: 0,
+        }).format(value)
+
+      function setButtonState() {
+        guestBtn.className =
+          'rounded-xl px-3 py-2 text-sm font-medium transition ' +
+          (viewMode === 'guest' ? 'bg-cyan-400 text-slate-900' : 'bg-slate-800 hover:bg-slate-700')
+        adminBtn.className =
+          'rounded-xl px-3 py-2 text-sm font-medium transition ' +
+          (viewMode === 'admin' ? 'bg-cyan-400 text-slate-900' : 'bg-slate-800 hover:bg-slate-700')
+      }
+
+      function fillFilterOptions(data) {
+        const categories = ['Semua', ...new Set(data.map((item) => item.kategori))]
+        const cities = ['Semua', ...new Set(data.map((item) => item.kota))]
+
+        categoryFilter.innerHTML = categories
+          .map((category) => `<option value="${category}">Filter Kategori: ${category}</option>`)
+          .join('')
+        cityFilter.innerHTML = cities.map((city) => `<option value="${city}">Filter Kota: ${city}</option>`).join('')
+      }
+
+      function getFilteredData() {
+        const q = searchInput.value.toLowerCase()
+        const selectedCategory = categoryFilter.value || 'Semua'
+        const selectedCity = cityFilter.value || 'Semua'
+
+        return allData.filter((item) => {
+          const matchSearch =
+            item.namaLayanan.toLowerCase().includes(q) ||
+            item.id.toLowerCase().includes(q) ||
+            item.kategori.toLowerCase().includes(q)
+          const matchCategory = selectedCategory === 'Semua' || item.kategori === selectedCategory
+          const matchCity = selectedCity === 'Semua' || item.kota === selectedCity
+          return matchSearch && matchCategory && matchCity
+        })
+      }
+
+      function renderGuest(data) {
+        guestContainer.innerHTML = data
+          .map(
+            (item) => `
+            <article class="overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/70 shadow-lg transition hover:-translate-y-1 hover:shadow-cyan-900/30">
+              <img src="${item.gambar}" alt="${item.namaLayanan}" class="h-44 w-full object-cover" loading="lazy" />
+              <div class="space-y-2 p-4">
+                <div class="flex items-center justify-between">
+                  <span class="rounded-full bg-slate-800 px-2 py-1 text-xs">${item.id}</span>
+                  <span class="text-xs text-amber-300">Rating ${item.rating}</span>
+                </div>
+                <h3 class="text-lg font-semibold">${item.namaLayanan}</h3>
+                <p class="text-sm text-slate-300">${item.kategori} • ${item.kota}</p>
+                <p class="text-sm text-cyan-300">${formatRupiah(item.hargaMulai)}</p>
+                <p class="text-xs text-slate-400">${item.lokasi.alamat}</p>
+              </div>
+            </article>
+          `,
+          )
+          .join('')
+      }
+
+      function renderAdmin(data) {
+        adminTableBody.innerHTML = data
+          .map(
+            (item) => `
+            <tr class="border-t border-slate-700 align-top">
+              <td class="px-3 py-3">${item.id}</td>
+              <td class="px-3 py-3">${item.namaLayanan}</td>
+              <td class="px-3 py-3">${item.kategori}</td>
+              <td class="px-3 py-3">${item.kota}</td>
+              <td class="px-3 py-3">${formatRupiah(item.hargaMulai)}</td>
+              <td class="px-3 py-3">${item.rating}</td>
+              <td class="px-3 py-3">${item.status}</td>
+              <td class="px-3 py-3">${item.jadwal.buka} - ${item.jadwal.tutup}</td>
+              <td class="px-3 py-3">${item.kontak.telepon}<br/><span class="text-xs text-slate-400">${item.kontak.email}</span></td>
+              <td class="px-3 py-3">${item.lokasi.wilayah}<br/><span class="text-xs text-slate-400">${item.lokasi.alamat}</span></td>
+            </tr>
+          `,
+          )
+          .join('')
+      }
+
+      function renderAll() {
+        const filtered = getFilteredData()
+        counterText.textContent = `Menampilkan ${filtered.length} data dari ${allData.length} total data.`
+        renderGuest(filtered)
+        renderAdmin(filtered)
+      }
+
+      function setView(mode) {
+        viewMode = mode
+        setButtonState()
+        if (mode === 'guest') {
+          guestContainer.classList.remove('hidden')
+          adminContainer.classList.add('hidden')
+        } else {
+          guestContainer.classList.add('hidden')
+          adminContainer.classList.remove('hidden')
+        }
+      }
+
+      async function init() {
+        const response = await fetch('./src/pertemuan4/data/kulinerServices.json')
+        allData = await response.json()
+        fillFilterOptions(allData)
+        renderAll()
+        setView('guest')
+      }
+
+      searchInput.addEventListener('input', renderAll)
+      categoryFilter.addEventListener('change', renderAll)
+      cityFilter.addEventListener('change', renderAll)
+      guestBtn.addEventListener('click', () => setView('guest'))
+      adminBtn.addEventListener('click', () => setView('admin'))
+
+      init()
+    </script>
+  </body>
+</html>

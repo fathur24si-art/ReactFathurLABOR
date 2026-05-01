@@ -4,83 +4,72 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
 const AntigravityInner = ({
-  count = 180,
-  magnetRadius = 8,
-  ringRadius = 6,
-  particleSize = 1.2,
-  lerpSpeed = 0.06,
-  color = '#8b5cf6',
+  count = 1000,
 }) => {
   const meshRef = useRef()
   const { viewport } = useThree()
   const dummy = useMemo(() => new THREE.Object3D(), [])
+  const color = useMemo(() => new THREE.Color(), [])
 
   const particles = useMemo(() => {
     const temp = []
-    const width = viewport.width || 100
-    const height = viewport.height || 100
-
     for (let i = 0; i < count; i++) {
-      const x = (Math.random() - 0.5) * width
-      const y = (Math.random() - 0.5) * height
-      const z = (Math.random() - 0.5) * 20
+      // Lebih padat di tengah dengan pow
+      const radius = 5 + Math.pow(Math.random(), 2) * 35
+      const theta = Math.random() * 2 * Math.PI
+      const phi = Math.acos(2 * Math.random() - 1)
+      
+      const x = radius * Math.sin(phi) * Math.cos(theta)
+      const y = radius * Math.sin(phi) * Math.sin(theta)
+      const z = radius * Math.cos(phi)
 
       temp.push({
-        baseX: x,
-        baseY: y,
-        baseZ: z,
-        cx: x,
-        cy: y,
-        cz: z,
-        t: Math.random() * 100,
+        x,
+        y,
+        z,
+        colorOffset: Math.random() * Math.PI * 2,
+        speed: 0.2 + Math.random() * 0.5,
       })
     }
     return temp
-  }, [count, viewport.width, viewport.height])
+  }, [count])
 
   useFrame((state) => {
     const mesh = meshRef.current
     if (!mesh) return
 
-    const { viewport: v, pointer: m, clock } = state
-
-    const targetX = m.x * v.width
-    const targetY = m.y * v.height
+    const { pointer, clock } = state
     const time = clock.getElapsedTime()
 
+    // Parallax effect: seluruh sistem bergerak mengikuti kursor dengan halus
+    mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, -pointer.y * 0.5, 0.05)
+    mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, pointer.x * 0.5, 0.05)
+
     particles.forEach((p, i) => {
-      const dx = p.cx - targetX
-      const dy = p.cy - targetY
-      const dist = Math.sqrt(dx * dx + dy * dy)
-
-      let tx = p.baseX + Math.sin(time + p.t) * 0.5
-      let ty = p.baseY + Math.cos(time + p.t) * 0.5
-      let tz = p.baseZ
-
-      if (dist < magnetRadius) {
-        const angle = Math.atan2(dy, dx)
-        tx = targetX + ringRadius * Math.cos(angle)
-        ty = targetY + ringRadius * Math.sin(angle)
-      }
-
-      p.cx += (tx - p.cx) * lerpSpeed
-      p.cy += (ty - p.cy) * lerpSpeed
-      p.cz += (tz - p.cz) * lerpSpeed
-
-      dummy.position.set(p.cx, p.cy, p.cz)
-      dummy.scale.set(particleSize, particleSize, particleSize)
+      // Gerakan mengambang natural ke atas-bawah dan keluar-masuk
+      const floatY = Math.sin(time * p.speed + p.colorOffset) * 0.5
+      
+      dummy.position.set(p.x, p.y + floatY, p.z)
+      // Orientasi mengarah persis ke pusat (radial burst)
+      dummy.lookAt(0, floatY, 0)
       dummy.updateMatrix()
-
       mesh.setMatrixAt(i, dummy.matrix)
+
+      // Warna RGB yang sangat cerah (vibrant) menggunakan meshBasicMaterial
+      color.setHSL(((time * 0.05) + p.colorOffset) % 1, 1.0, 0.6)
+      mesh.setColorAt(i, color)
     })
 
     mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
   })
 
   return (
     <instancedMesh ref={meshRef} args={[null, null, count]}>
-      <sphereGeometry args={[0.12, 10, 10]} />
-      <meshBasicMaterial color={color} />
+      {/* Box kecil memanjang agar terlihat seperti serpihan garis cahaya */}
+      <boxGeometry args={[0.03, 0.03, 0.6]} />
+      {/* Basic material tidak bergantung pada cahaya, jadi warnanya akan sangat mencolok dan bersih */}
+      <meshBasicMaterial />
     </instancedMesh>
   )
 }
@@ -89,16 +78,19 @@ export default function Antigravity() {
   return (
     <div
       style={{
-        position: 'fixed',
+        position: 'absolute',
         inset: 0,
         zIndex: 0,
       }}
     >
       <Canvas
-  camera={{ position: [0, 0, 50], fov: 35 }}
-  style={{ background: '#ffffff' }}
-  onPointerMove={() => {}}
->
+        camera={{ position: [0, 0, 40], fov: 40 }}
+        style={{ background: 'transparent' }}
+        eventSource={document.getElementById('root')}
+        eventPrefix="client"
+      >
+        <ambientLight intensity={0.7} />
+        <pointLight position={[10, 10, 10]} intensity={1.5} />
         <AntigravityInner />
       </Canvas>
     </div>

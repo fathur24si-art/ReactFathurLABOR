@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Warna partikel GooeyNav (prop colors memakai indeks 1–4) */
 :root {

@@ -52,8 +52,8 @@ export default function Dashboard(props) {
   const { onOpen } = useDisclosure();
   
   return (
-    <Box>
-      <Box>
+    <Box bg="#F5F1E8">
+      <Box bg="#F5F1E8">
         <SidebarContext.Provider
           value={{
             toggleSidebar,
@@ -71,6 +71,7 @@ export default function Dashboard(props) {
             w={{ base: '100%', xl: 'calc( 100% - 290px )' }}
             maxWidth={{ base: '100%', xl: 'calc( 100% - 290px )' }}
             transition="all 0.33s cubic-bezier(0.685, 0.0473, 0.346, 1)"
+            bg="#F5F1E8"
           >
             <Portal>
               <Box>
@@ -90,6 +91,7 @@ export default function Dashboard(props) {
               pe="20px"
               minH="100vh"
               pt="50px"
+              bg="#F5F1E8"
             >
               <ErrorBoundary>
                 <Routes>

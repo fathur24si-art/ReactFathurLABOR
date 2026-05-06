@@ -2,8 +2,8 @@ import React, { Suspense, useState } from "react";
 import { Box, Flex, Heading, Text } from "@chakra-ui/react";
 import { Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import Antigravity from "../pertemuan5/Antigravity.jsx";
-import CountUp from "../pertemuan 7/CountUp.jsx";
+import Antigravity from "../exercises/pertemuan5/Antigravity.jsx";
+import CountUp from "../exercises/pertemuan7/CountUp.jsx";
 
 const MotionFlex = motion(Flex);
 

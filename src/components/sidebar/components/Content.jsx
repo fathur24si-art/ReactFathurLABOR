@@ -1,26 +1,33 @@
-// chakra imports
-import { Box, Flex, Stack } from "@chakra-ui/react";
-//   Custom components
+import React from "react";
+import { Box, Flex, Stack, Text, useColorModeValue } from "@chakra-ui/react";
 import Brand from "./Brand.jsx";
 import Links from "./Links.jsx";
 
-import React from "react";
-
-// FUNCTIONS
-
 function SidebarContent(props) {
   const { routes } = props;
-  // SIDEBAR
+  const sectionColor = useColorModeValue("gray.400", "gray.500");
+
   return (
-    <Flex direction='column' height='100%' pt='25px' px="16px" borderRadius='30px'>
+    <Flex direction="column" height="100%" pt="18px" px="8px">
       <Brand />
-      <Stack direction='column' mb='auto' mt='8px'>
-        <Box ps='20px' pe={{ md: "16px", "2xl": "1px" }}>
+
+      <Box px="18px" mb="10px">
+        <Text
+          fontSize="xs"
+          fontWeight="800"
+          color={sectionColor}
+          letterSpacing="1px"
+          textTransform="uppercase"
+        >
+          Menu Utama
+        </Text>
+      </Box>
+
+      <Stack direction="column" spacing="8px" mb="auto">
+        <Box px="10px">
           <Links routes={routes} />
         </Box>
       </Stack>
-
-
     </Flex>
   );
 }

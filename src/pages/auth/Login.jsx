@@ -6,7 +6,7 @@ import {
 } from "@chakra-ui/react";
 import { MdPerson, MdLock, MdRestaurant } from "react-icons/md";
 import axios from "axios";
-import GlareHover from "../../pertemuan 7/GlareHover.jsx";
+import GlareHover from "../../exercises/pertemuan7/GlareHover.jsx";
 
 const API_URL = "https://dummyjson.com/auth/login";
 
@@ -65,125 +65,199 @@ export default function Login() {
         }
     };
 
-    return (
-        <Box w="100%" maxW="420px" mx="auto" style={{ perspective: "1200px" }}>
-            <GlareHover
-                width="100%"
-                background="rgba(255, 255, 255, 0.65)"
-                borderRadius="32px"
-                borderColor="rgba(255, 255, 255, 0.8)"
-                glareColor="#ffffff"
-                glareOpacity={0.4}
-                glareAngle={-45}
-                glareSize={250}
-                transitionDuration={700}
-                style={{
-                    backdropFilter: "blur(24px)",
-                    WebkitBackdropFilter: "blur(24px)",
-                    boxShadow: "0px 30px 60px rgba(15, 23, 42, 0.08), inset 0px 1px 0px rgba(255,255,255,1)",
-                }}
+return (
+  <Box w="100%" maxW="430px" mx="auto" style={{ perspective: "1200px" }}>
+    <GlareHover
+      width="100%"
+      background="linear-gradient(145deg, rgba(255,255,255,0.92), rgba(255,247,237,0.78))"
+      borderRadius="36px"
+      borderColor="rgba(255,255,255,0.9)"
+      glareColor="#ffffff"
+      glareOpacity={0.45}
+      glareAngle={-45}
+      glareSize={260}
+      transitionDuration={700}
+      style={{
+        backdropFilter: "blur(26px)",
+        WebkitBackdropFilter: "blur(26px)",
+        boxShadow:
+          "0px 28px 70px rgba(15,23,42,0.14), inset 0px 1px 0px rgba(255,255,255,1)",
+      }}
+    >
+      <Box p={{ base: "8", md: "10" }} w="100%" position="relative" overflow="hidden">
+        <Box
+          position="absolute"
+          top="-70px"
+          right="-70px"
+          w="180px"
+          h="180px"
+          rounded="full"
+          bg="orange.200"
+          opacity="0.5"
+          filter="blur(8px)"
+        />
+
+        <Flex direction="column" align="center" mb="8" position="relative">
+          <Flex
+            align="center"
+            justify="center"
+            w="70px"
+            h="70px"
+            rounded="26px"
+            bgGradient="linear(to-br, orange.300, orange.500)"
+            mb="5"
+            boxShadow="0px 16px 30px rgba(251,146,60,0.38)"
+          >
+            <Icon as={MdRestaurant} w="32px" h="32px" color="white" />
+          </Flex>
+
+          <Heading color="gray.900" fontSize="3xl" fontWeight="900" mb="2">
+            Resto Rustaf
+          </Heading>
+
+          <Text color="gray.500" fontSize="sm" fontWeight="600" textAlign="center">
+            Masuk ke dashboard manajemen restoran
+          </Text>
+        </Flex>
+
+        <form onSubmit={handleSubmit}>
+          <VStack spacing="5" align="stretch">
+            {error && (
+              <Box
+                p="4"
+                bg="red.50"
+                color="red.500"
+                borderRadius="18px"
+                border="1px solid"
+                borderColor="red.100"
+                textAlign="center"
+                fontSize="sm"
+                fontWeight="700"
+              >
+                {error}
+              </Box>
+            )}
+
+            <FormControl>
+              <FormLabel
+                color="gray.700"
+                ms="1"
+                fontSize="xs"
+                fontWeight="900"
+                textTransform="uppercase"
+                letterSpacing="1px"
+              >
+                Username
+              </FormLabel>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none" h="100%">
+                  <Icon as={MdPerson} color="orange.400" w="5" h="5" />
+                </InputLeftElement>
+                <Input
+                  type="text"
+                  name="username"
+                  value={dataForm.username}
+                  onChange={handleChange}
+                  placeholder="emilys"
+                  bg="white"
+                  border="1px solid"
+                  borderColor="orange.100"
+                  color="gray.900"
+                  fontWeight="700"
+                  borderRadius="18px"
+                  h="54px"
+                  _placeholder={{ color: "gray.400" }}
+                  _hover={{ borderColor: "orange.300" }}
+                  _focus={{
+                    borderColor: "orange.400",
+                    boxShadow: "0 0 0 4px rgba(251,146,60,0.16)",
+                  }}
+                />
+              </InputGroup>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel
+                color="gray.700"
+                ms="1"
+                fontSize="xs"
+                fontWeight="900"
+                textTransform="uppercase"
+                letterSpacing="1px"
+              >
+                Kata Sandi
+              </FormLabel>
+              <InputGroup>
+                <InputLeftElement pointerEvents="none" h="100%">
+                  <Icon as={MdLock} color="orange.400" w="5" h="5" />
+                </InputLeftElement>
+                <Input
+                  type="password"
+                  name="password"
+                  value={dataForm.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  bg="white"
+                  border="1px solid"
+                  borderColor="orange.100"
+                  color="gray.900"
+                  fontWeight="700"
+                  borderRadius="18px"
+                  h="54px"
+                  letterSpacing="2px"
+                  _placeholder={{ color: "gray.400" }}
+                  _hover={{ borderColor: "orange.300" }}
+                  _focus={{
+                    borderColor: "orange.400",
+                    boxShadow: "0 0 0 4px rgba(251,146,60,0.16)",
+                  }}
+                />
+              </InputGroup>
+            </FormControl>
+
+            <Button
+              type="submit"
+              bgGradient="linear(to-r, orange.400, orange.500)"
+              color="white"
+              h="56px"
+              borderRadius="20px"
+              fontWeight="900"
+              fontSize="md"
+              isLoading={loading}
+              loadingText="Memverifikasi..."
+              boxShadow="0px 16px 30px rgba(251,146,60,0.35)"
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "0px 22px 38px rgba(251,146,60,0.45)",
+              }}
+              _active={{ transform: "translateY(0px)" }}
+              mt="4"
             >
-                <Box p={{ base: "8", md: "10" }} w="100%">
-                    {/* Header */}
-                    <Flex direction="column" align="center" mb="8">
-                        <Flex align="center" justify="center" w="64px" h="64px" rounded="2xl"
-                            bgGradient="linear(to-br, blue.500, blue.700)" mb="5"
-                            boxShadow="0px 12px 24px rgba(49,130,206,0.35)">
-                            <Icon as={MdRestaurant} w="28px" h="28px" color="white" />
-                        </Flex>
-                        <Heading color="gray.900" fontSize="2xl" fontWeight="800" letterSpacing="-0.02em" mb="2">
-                            Admin Portal
-                        </Heading>
-                        <Text color="gray.500" fontSize="sm" fontWeight="500">
-                            Akses dashboard manajemen restoran
-                        </Text>
-                    </Flex>
+              Masuk
+            </Button>
+          </VStack>
+        </form>
 
-                    <form onSubmit={handleSubmit}>
-                        <VStack spacing="5" align="stretch">
-                            {/* ✅ Tampilkan error jika ada */}
-                            {error && (
-                                <Box p="3" bg="red.50" color="red.600" borderRadius="xl"
-                                    border="1px solid" borderColor="red.200" textAlign="center"
-                                    fontSize="sm" fontWeight="500">
-                                    {error}
-                                </Box>
-                            )}
-
-                            {/* ✅ Field Username (sesuai endpoint DummyJSON) */}
-                            <FormControl>
-                                <FormLabel color="gray.700" ms="1" fontSize="xs" fontWeight="700"
-                                    textTransform="uppercase" letterSpacing="wider">
-                                    Username
-                                </FormLabel>
-                                <InputGroup>
-                                    <InputLeftElement pointerEvents="none" h="100%">
-                                        <Icon as={MdPerson} color="gray.400" w="5" h="5" />
-                                    </InputLeftElement>
-                                    <Input
-                                        type="text"
-                                        name="username"
-                                        value={dataForm.username}
-                                        onChange={handleChange}
-                                        placeholder="emilys"
-                                        bg="rgba(255,255,255,0.8)" border="1px solid"
-                                        borderColor="gray.200" color="gray.900" fontWeight="500"
-                                        _placeholder={{ color: "gray.400" }}
-                                        _hover={{ borderColor: "blue.300", bg: "white" }}
-                                        _focus={{ bg: "white", borderColor: "blue.500", boxShadow: "0 0 0 3px rgba(49,130,206,0.15)" }}
-                                        borderRadius="16px" h="52px" transition="all 0.2s"
-                                    />
-                                </InputGroup>
-                            </FormControl>
-
-                            {/* ✅ Field Password */}
-                            <FormControl>
-                                <FormLabel color="gray.700" ms="1" fontSize="xs" fontWeight="700"
-                                    textTransform="uppercase" letterSpacing="wider">
-                                    Kata Sandi
-                                </FormLabel>
-                                <InputGroup>
-                                    <InputLeftElement pointerEvents="none" h="100%">
-                                        <Icon as={MdLock} color="gray.400" w="5" h="5" />
-                                    </InputLeftElement>
-                                    <Input
-                                        type="password"
-                                        name="password"
-                                        value={dataForm.password}
-                                        onChange={handleChange}
-                                        placeholder="••••••••"
-                                        bg="rgba(255,255,255,0.8)" border="1px solid"
-                                        borderColor="gray.200" color="gray.900" fontWeight="500"
-                                        _placeholder={{ color: "gray.400", letterSpacing: "2px" }}
-                                        _hover={{ borderColor: "blue.300", bg: "white" }}
-                                        _focus={{ bg: "white", borderColor: "blue.500", boxShadow: "0 0 0 3px rgba(49,130,206,0.15)" }}
-                                        borderRadius="16px" h="52px" letterSpacing="2px" transition="all 0.2s"
-                                    />
-                                </InputGroup>
-                            </FormControl>
-
-                            {/* ✅ Tombol submit dengan loading state */}
-                            <Button type="submit" bg="gray.900" color="white" h="52px" borderRadius="16px"
-                                fontWeight="700" fontSize="md" isLoading={loading} loadingText="Memverifikasi..."
-                                _hover={{ bg: "black", transform: "translateY(-2px)", boxShadow: "0px 10px 20px rgba(0,0,0,0.2)" }}
-                                _active={{ bg: "gray.800", transform: "translateY(0px)" }}
-                                mt="4" transition="all 0.3s cubic-bezier(0.4,0,0.2,1)">
-                                Masuk
-                            </Button>
-                        </VStack>
-                    </form>
-
-                    {/* Hint akun demo */}
-                    <Box mt="8" pt="6" borderTop="1px solid" borderColor="rgba(0,0,0,0.05)" textAlign="center">
-                        <Text fontSize="xs" color="gray.500" fontWeight="500">
-                            Demo:{" "}
-                            <Text as="span" color="gray.800" fontWeight="700">emilys</Text>
-                            {" / "}
-                            <Text as="span" color="gray.800" fontWeight="700">emilyspass</Text>
-                        </Text>
-                    </Box>
-                </Box>
-            </GlareHover>
+        <Box
+          mt="8"
+          pt="6"
+          borderTop="1px solid"
+          borderColor="orange.100"
+          textAlign="center"
+        >
+          <Text fontSize="xs" color="gray.500" fontWeight="600">
+            Demo:{" "}
+            <Text as="span" color="orange.500" fontWeight="900">
+              emilys
+            </Text>
+            {" / "}
+            <Text as="span" color="orange.500" fontWeight="900">
+              emilyspass
+            </Text>
+          </Text>
         </Box>
-    );
+      </Box>
+    </GlareHover>
+  </Box>
+);
 }

@@ -1,6 +1,4 @@
 import React from "react";
-
-
 import {
   Box,
   Flex,
@@ -21,39 +19,46 @@ import {
 } from "../scrollbar/Scrollbar.jsx";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import PropTypes from "prop-types";
-
-// Assets
 import { IoMenuOutline } from "react-icons/io5";
 
 function Sidebar(props) {
   const { routes } = props;
 
-  let variantChange = "0.2s linear";
-  let shadow = useColorModeValue(
-    "14px 17px 40px 4px rgba(112, 144, 176, 0.08)",
-    "unset"
+  const sidebarBg = useColorModeValue(
+    "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+    "linear-gradient(180deg, #111827 0%, #0f172a 100%)"
   );
-  // Chakra Color Mode
-  let sidebarBg = useColorModeValue("white", "navy.800");
-  let sidebarMargins = "0px";
 
-  // SIDEBAR
+  const borderColor = useColorModeValue("gray.100", "whiteAlpha.100");
+  const shadow = useColorModeValue(
+    "0 24px 60px rgba(15, 23, 42, 0.08)",
+    "0 24px 60px rgba(0, 0, 0, 0.35)"
+  );
+
   return (
-    <Box display={{ sm: "none", xl: "block" }} w="100%" position='fixed' minH='100%'>
+    <Box
+      display={{ sm: "none", xl: "block" }}
+      position="fixed"
+      minH="100%"
+      p="18px"
+      zIndex="10"
+    >
       <Box
         bg={sidebarBg}
-        transition={variantChange}
-        w='300px'
-        h='100vh'
-        m={sidebarMargins}
-        minH='100%'
-        overflowX='hidden'
-        boxShadow={shadow}>
+        w="300px"
+        h="calc(100vh - 36px)"
+        borderRadius="30px"
+        overflowX="hidden"
+        border="1px solid"
+        borderColor={borderColor}
+        boxShadow={shadow}
+      >
         <Scrollbars
           autoHide
           renderTrackVertical={renderTrack}
           renderThumbVertical={renderThumb}
-          renderView={renderView}>
+          renderView={renderView}
+        >
           <Content routes={routes} />
         </Scrollbars>
       </Box>
@@ -61,50 +66,65 @@ function Sidebar(props) {
   );
 }
 
-// FUNCTIONS
 export function SidebarResponsive(props) {
-  let sidebarBackgroundColor = useColorModeValue("white", "navy.800");
-  let menuColor = useColorModeValue("gray.400", "white");
-  // // SIDEBAR
+  const { routes } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = React.useRef();
 
-  const { routes } = props;
-  // let isWindows = navigator.platform.startsWith("Win");
-  //  BRAND
+  const sidebarBg = useColorModeValue("#ffffff", "#0f172a");
+  const menuBg = useColorModeValue("white", "whiteAlpha.100");
+  const menuColor = useColorModeValue("gray.700", "white");
+  const borderColor = useColorModeValue("gray.100", "whiteAlpha.200");
 
   return (
-    <Flex display={{ sm: "flex", xl: "none" }} alignItems='center'>
-      <Flex ref={btnRef} w='max-content' h='max-content' onClick={onOpen}>
+    <Flex display={{ sm: "flex", xl: "none" }} alignItems="center">
+      <Flex
+        ref={btnRef}
+        onClick={onOpen}
+        w="42px"
+        h="42px"
+        align="center"
+        justify="center"
+        bg={menuBg}
+        border="1px solid"
+        borderColor={borderColor}
+        borderRadius="16px"
+        boxShadow="0 10px 25px rgba(15, 23, 42, 0.08)"
+      >
         <Icon
           as={IoMenuOutline}
           color={menuColor}
-          my='auto'
-          w='20px'
-          h='20px'
-          me='10px'
+          w="24px"
+          h="24px"
           _hover={{ cursor: "pointer" }}
         />
       </Flex>
+
       <Drawer
         isOpen={isOpen}
         onClose={onClose}
         placement={document.documentElement.dir === "rtl" ? "right" : "left"}
-        finalFocusRef={btnRef}>
+        finalFocusRef={btnRef}
+      >
         <DrawerOverlay />
-        <DrawerContent w='285px' maxW='285px' bg={sidebarBackgroundColor}>
+        <DrawerContent
+          w="300px"
+          maxW="300px"
+          bg={sidebarBg}
+          borderRightRadius="30px"
+        >
           <DrawerCloseButton
-            zIndex='3'
-            onClose={onClose}
+            zIndex="3"
             _focus={{ boxShadow: "none" }}
             _hover={{ boxShadow: "none" }}
           />
-          <DrawerBody maxW='285px' px='0rem' pb='0'>
+          <DrawerBody maxW="300px" px="0" pb="0">
             <Scrollbars
               autoHide
               renderTrackVertical={renderTrack}
               renderThumbVertical={renderThumb}
-              renderView={renderView}>
+              renderView={renderView}
+            >
               <Content routes={routes} />
             </Scrollbars>
           </DrawerBody>
@@ -113,7 +133,6 @@ export function SidebarResponsive(props) {
     </Flex>
   );
 }
-// PROPS
 
 Sidebar.propTypes = {
   logoText: PropTypes.string,

@@ -1,5 +1,5 @@
 import { IMPROVEMENTS, NAV_LINKS, PROJECTS, SKILLS } from "./portfolioData";
-import GooeyNav from "../GooeyNav";
+import GooeyNav from "../GooeyNav.jsx";
 
 function ParticleShape({ shape, size, color, opacity }) {
   if (shape === "circle") {

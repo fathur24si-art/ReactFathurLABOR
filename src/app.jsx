@@ -4,7 +4,7 @@ import React, { Suspense, lazy, useState } from 'react';
 
 import AdminLayout from './pertemuan6/layouts/admin';
 import { ChakraProvider, Flex, Spinner, Text, VStack } from '@chakra-ui/react';
-import initialTheme from './theme/theme';
+import initialTheme from './theme/theme.jsx';
 
 
 const MainLayout = lazy(() => import('./layouts/MainLayout.jsx'));

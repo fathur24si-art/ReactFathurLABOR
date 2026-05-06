@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import custom Tailwind utilities for Resto Rustaf */
+@import './styles/tailwind-utils.css';
+
 /* Warna partikel GooeyNav (prop colors memakai indeks 1–4) */
 :root {
   --color-1: #a78bfa;

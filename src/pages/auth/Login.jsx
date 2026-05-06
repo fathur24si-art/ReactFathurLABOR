@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box, Button, FormControl, FormLabel, Input,
-    InputGroup, InputLeftElement, Icon, Text, VStack, Heading, Flex,
+    InputGroup, InputLeftElement, Icon, Text, VStack, Heading, Flex, Badge,
 } from "@chakra-ui/react";
-import { MdPerson, MdLock, MdRestaurant } from "react-icons/md";
+import { MdPerson, MdLock, MdRestaurant, MdError } from "react-icons/md";
 import axios from "axios";
 import GlareHover from "../../exercises/pertemuan7/GlareHover.jsx";
 
 const API_URL = "https://dummyjson.com/auth/login";
+const DEV_MODE = true; 
 
 export default function Login() {
     const [dataForm, setDataForm] = useState({
@@ -38,14 +39,37 @@ export default function Login() {
 
 
         setLoading(true);
-        //Ini untuk kirim data API
+
+        // DEV_MODE: Bypass API call for testing
+        if (DEV_MODE) {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const mockUser = {
+                id: 1,
+                username: username,
+                email: "admin@restorustaf.com",
+                firstName: "Admin",
+                lastName: "Resto",
+                accessToken: "mock-token-" + Date.now(),
+            };
+
+            localStorage.setItem("adminToken", mockUser.accessToken);
+            localStorage.setItem("adminUser", JSON.stringify(mockUser));
+            navigate("/admin/beranda");
+            setLoading(false);
+            return;
+        }
+
+        // Production: Real API call
         try {
             const response = await axios.post(API_URL, {
                 username,
                 password,
                 expiresInMins: 30,
+            }, {
+                timeout: 10000, // 10 second timeout
             });
-
 
             localStorage.setItem("adminToken", response.data.accessToken);
             localStorage.setItem("adminUser", JSON.stringify(response.data));
@@ -53,14 +77,22 @@ export default function Login() {
             navigate("/admin/beranda");
 
         } catch (err) {
+            console.error("Login error:", err);
 
-            if (err.response?.status === 400) {
+            if (err.code === "ERR_NETWORK") {
+                setError("Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
+            } else if (err.code === "ERR_BAD_REQUEST" || err.response?.status === 400) {
                 setError("Username atau password salah.");
+            } else if (err.code === "ECONNABORTED" || err.code === "TIMEOUT") {
+                setError("Koneksi timeout. Silakan coba lagi.");
+            } else if (err.response?.status === 401) {
+                setError("Akses ditolak. Silakan login ulang.");
+            } else if (err.response?.status >= 500) {
+                setError("Server sedang bermasalah. Silakan coba beberapa saat lagi.");
             } else {
-                setError("Koneksi gagal. Silakan coba lagi.");
+                setError("Terjadi kesalahan. Silakan coba lagi.");
             }
         } finally {
-
             setLoading(false);
         }
     };
@@ -123,19 +155,21 @@ return (
         <form onSubmit={handleSubmit}>
           <VStack spacing="5" align="stretch">
             {error && (
-              <Box
+              <Flex
                 p="4"
                 bg="red.50"
                 color="red.500"
                 borderRadius="18px"
                 border="1px solid"
-                borderColor="red.100"
-                textAlign="center"
+                borderColor="red.200"
+                align="center"
+                gap="3"
                 fontSize="sm"
                 fontWeight="700"
               >
-                {error}
-              </Box>
+                <Icon as={MdError} w="5" h="5" flexShrink={0} />
+                <Text>{error}</Text>
+              </Flex>
             )}
 
             <FormControl>
@@ -245,7 +279,7 @@ return (
           borderColor="orange.100"
           textAlign="center"
         >
-          <Text fontSize="xs" color="gray.500" fontWeight="600">
+          <Text fontSize="xs" color="gray.500" fontWeight="600" mb="2">
             Demo:{" "}
             <Text as="span" color="orange.500" fontWeight="900">
               emilys
@@ -255,6 +289,12 @@ return (
               emilyspass
             </Text>
           </Text>
+
+          {DEV_MODE && (
+            <Badge colorScheme="purple" variant="subtle" borderRadius="full" px="3" py="1">
+              DEV MODE ACTIVE
+            </Badge>
+          )}
         </Box>
       </Box>
     </GlareHover>

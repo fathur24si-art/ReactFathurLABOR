@@ -1,0 +1,197 @@
+/* Tailwind CSS Utilities for Resto Rustaf */
+
+/* Base Layer - Override or extend Tailwind base */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Component Layer - Reusable component classes */
+@layer components {
+  /* Card Component */
+  .card {
+    @apply bg-white/90 backdrop-blur-xl border border-gray-100 rounded-[32px] shadow-soft;
+    @apply dark:bg-dark-card/85 dark:border-white/10;
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .card:hover {
+    @apply shadow-hover -translate-y-1;
+  }
+  
+  /* Button Component */
+  .btn-primary {
+    @apply bg-brand-400 text-white font-extrabold px-7 py-3 rounded-[18px];
+    @apply shadow-[0_12px_24px_rgba(251,146,60,0.28)];
+    @apply hover:bg-brand-500 hover:-translate-y-0.5;
+    @apply active:scale-95;
+    @apply transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-gray-700 font-bold px-7 py-3 rounded-[18px];
+    @apply border-2 border-gray-200;
+    @apply hover:bg-gray-50 hover:border-gray-300;
+    @apply transition-all duration-200;
+  }
+  
+  /* Input Component */
+  .input-field {
+    @apply w-full bg-white/80 border border-gray-200 rounded-[18px] px-4 py-3;
+    @apply text-sm font-semibold text-gray-900;
+    @apply placeholder:text-gray-400;
+    @apply focus:outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-400/20;
+    @apply transition-all duration-200;
+  }
+  
+  /* Badge Component */
+  .badge-brand {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full;
+    @apply bg-brand-50 text-brand-700 text-xs font-extrabold;
+    @apply border border-brand-200;
+  }
+  
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white/75 backdrop-blur-2xl border border-white/90;
+    @apply dark:bg-dark-bg/80 dark:border-white/10;
+  }
+  
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-400 to-brand-600 bg-clip-text text-transparent;
+  }
+  
+  /* Page Header */
+  .page-header {
+    @apply glass rounded-[34px] p-6 md:p-8 mb-7;
+    @apply shadow-soft;
+  }
+  
+  /* Stats Card */
+  .stat-card {
+    @apply card p-6;
+    @apply relative overflow-hidden;
+  }
+  
+  .stat-card::before {
+    content: '';
+    @apply absolute -top-10 -right-10 w-28 h-28 rounded-full;
+    @apply bg-brand-400/10;
+  }
+  
+  /* Sidebar Menu Item */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-[22px];
+    @apply text-gray-600 font-semibold text-sm;
+    @apply hover:bg-brand-50 hover:text-brand-600;
+    @apply transition-all duration-200;
+  }
+  
+  .sidebar-link.active {
+    @apply bg-gradient-to-r from-brand-400 to-brand-500 text-white;
+    @apply shadow-[0_16px_35px_rgba(249,115,22,0.35)];
+  }
+  
+  /* Chart Bar */
+  .chart-bar {
+    @apply w-full rounded-t-[18px] rounded-b-lg;
+    @apply bg-gradient-to-t from-brand-500 to-brand-400;
+    @apply hover:from-brand-300 hover:to-brand-400;
+    @apply transition-all duration-300;
+    @apply cursor-pointer;
+  }
+  
+  /* Gradient Backgrounds */
+  .bg-gradient-brand {
+    @apply bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600;
+  }
+  
+  .bg-gradient-page {
+    @apply bg-gradient-to-br from-gray-50 via-white to-brand-50;
+    @apply dark:from-dark-bg dark:via-dark-bg dark:to-dark-card;
+  }
+}
+
+/* Utility Layer - Custom utilities */
+@layer utilities {
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Custom scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.brand.300') transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-brand-300 rounded-full;
+  }
+  
+  /* Text balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Animation delays */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  
+  /* Safe area insets for mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Dark mode specific styles */
+@media (prefers-color-scheme: dark) {
+  .dark-card {
+    @apply bg-dark-card/90 border-dark-border;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}

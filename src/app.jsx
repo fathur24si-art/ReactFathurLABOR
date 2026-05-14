@@ -16,10 +16,10 @@ const Register = lazy(() => import('./pages/auth/Register.jsx'));
 const Forgot = lazy(() => import('./pages/auth/Forgot.jsx'));
 
 
-const DasborRestoran = lazy(() => import('pertemuan6/views/admin/beranda'));
-const PesananPelanggan = lazy(() => import('pertemuan6/views/admin/tabel-data'));
-const DaftarPelanggan = lazy(() => import('pertemuan6/views/admin/profil'));
-const MenuMakanan = lazy(() => import('pertemuan6/views/admin/pasar'));
+const DasborRestoran = lazy(() => import('./pertemuan6/views/admin/beranda'));
+const PesananPelanggan = lazy(() => import('./pertemuan6/views/admin/tabel-data'));
+const DaftarPelanggan = lazy(() => import('./pertemuan6/views/admin/profil'));
+const MenuMakanan = lazy(() => import('./pertemuan6/views/admin/pasar'));
 
 const LoadingFallback = () => (
   <Flex minH="100vh" align="center" justify="center" bg="#f8fafc">

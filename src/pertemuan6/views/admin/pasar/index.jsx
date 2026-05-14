@@ -32,6 +32,7 @@ import {
   Tag,
   TagLabel,
   HStack,
+  Divider,
   Stat,
   StatLabel,
   StatNumber,
@@ -44,6 +45,7 @@ import {
   MdDeleteOutline,
   MdEdit,
   MdPhotoSizeSelectActual,
+  MdVisibility,
 } from "react-icons/md";
 
 const defaultMenuItems = [
@@ -119,10 +121,17 @@ export default function MenuMakanan() {
     onClose: onAlertClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isDetailOpen,
+    onOpen: onDetailOpen,
+    onClose: onDetailClose,
+  } = useDisclosure();
+
   const cancelRef = useRef();
   const toast = useToast();
 
   const [currentEdit, setCurrentEdit] = useState(null);
+  const [detailItem, setDetailItem] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -241,6 +250,16 @@ export default function MenuMakanan() {
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(val);
+  };
+
+  const openDetail = (item) => {
+    setDetailItem(item);
+    onDetailOpen();
+  };
+
+  const closeDetail = () => {
+    onDetailClose();
+    setDetailItem(null);
   };
 
   return (
@@ -401,7 +420,18 @@ export default function MenuMakanan() {
                 </Text>
               </Flex>
 
-              <Flex justify="flex-end">
+              <Flex justify="space-between" align="center" wrap="wrap" gap="10px">
+                <Button
+                  size="sm"
+                  leftIcon={<MdVisibility />}
+                  variant="ghost"
+                  colorScheme="orange"
+                  borderRadius="14px"
+                  fontWeight="800"
+                  onClick={() => openDetail(item)}
+                >
+                  Lihat detail
+                </Button>
                 <HStack>
                   <IconButton
                     size="md"
@@ -410,6 +440,7 @@ export default function MenuMakanan() {
                     bg="orange.50"
                     color="orange.500"
                     _hover={{ bg: "orange.100" }}
+                    aria-label="Edit menu"
                     onClick={() => handleOpenForm(item)}
                   />
                   <IconButton
@@ -419,6 +450,7 @@ export default function MenuMakanan() {
                     bg="red.50"
                     color="red.400"
                     _hover={{ bg: "red.100" }}
+                    aria-label="Hapus menu"
                     onClick={() => confirmDelete(item)}
                   />
                 </HStack>
@@ -427,6 +459,108 @@ export default function MenuMakanan() {
           </Box>
         ))}
       </SimpleGrid>
+
+      <Modal isOpen={isDetailOpen} onClose={closeDetail} isCentered size="lg">
+        <ModalOverlay backdropFilter="blur(8px)" />
+        <ModalContent borderRadius="30px" bg={cardBg} overflow="hidden" mx="14px">
+          <ModalHeader color={textColor} fontWeight="900" pb="0">
+            Detail menu
+          </ModalHeader>
+          <ModalCloseButton onClick={closeDetail} />
+
+          <ModalBody pb="6">
+            {detailItem && (
+              <>
+                <Box
+                  h="220px"
+                  bg={softBg}
+                  borderRadius="22px"
+                  overflow="hidden"
+                  mb="5"
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  {detailItem.image ? (
+                    <Image
+                      src={detailItem.image}
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                      alt={detailItem.name}
+                    />
+                  ) : (
+                    <Flex
+                      w="100%"
+                      h="100%"
+                      align="center"
+                      justify="center"
+                      direction="column"
+                      color="orange.300"
+                    >
+                      <MdPhotoSizeSelectActual size="48px" />
+                      <Text fontSize="sm" mt="2" fontWeight="800">
+                        Belum ada foto
+                      </Text>
+                    </Flex>
+                  )}
+                </Box>
+
+                <Text fontWeight="900" color={textColor} fontSize="xl" mb="2">
+                  {detailItem.name}
+                </Text>
+
+                <HStack spacing="10px" mb="5" flexWrap="wrap">
+                  <Badge
+                    colorScheme={categoryColor[detailItem.kategori]}
+                    borderRadius="full"
+                    px="12px"
+                    py="5px"
+                    fontWeight="800"
+                  >
+                    {detailItem.kategori}
+                  </Badge>
+                  <Badge
+                    colorScheme={detailItem.status === "Tersedia" ? "green" : "red"}
+                    borderRadius="full"
+                    px="12px"
+                    py="5px"
+                    fontWeight="800"
+                  >
+                    {detailItem.status}
+                  </Badge>
+                </HStack>
+
+                <Divider borderColor={borderColor} mb="5" />
+
+                <SimpleGrid columns={{ base: 1, sm: 2 }} gap="4">
+                  <Box>
+                    <Text fontSize="xs" fontWeight="800" color={subTextColor} textTransform="uppercase" letterSpacing="wider">
+                      Harga jual
+                    </Text>
+                    <Text fontWeight="900" color="orange.400" fontSize="2xl" mt="1">
+                      {formatIDR(detailItem.harga)}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="xs" fontWeight="800" color={subTextColor} textTransform="uppercase" letterSpacing="wider">
+                      ID menu
+                    </Text>
+                    <Text fontWeight="800" color={textColor} fontSize="lg" mt="1">
+                      #{detailItem.id}
+                    </Text>
+                  </Box>
+                </SimpleGrid>
+              </>
+            )}
+          </ModalBody>
+
+          <ModalFooter pt="0">
+            <Button borderRadius="16px" bg="orange.400" color="white" _hover={{ bg: "orange.500" }} onClick={closeDetail}>
+              Tutup
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       <Modal isOpen={isFormOpen} onClose={onFormClose} isCentered size="md">
         <ModalOverlay backdropFilter="blur(8px)" />

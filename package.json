@@ -23,7 +23,6 @@
     "apexcharts": "3.50.0",
     "axios": "^1.15.2",
     "framer-motion": "^11.3.7",
-    "npm-force-resolutions": "^0.0.10",
     "react": "19.0.0",
     "react-apexcharts": "1.4.1",
     "react-calendar": "^5.0.0",
@@ -47,11 +46,13 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "preinstall": "npx npm-force-resolutions"
+    "deploy": "gh-pages -d build"
   },
-  "resolutions": {
+  "overrides": {
     "react-error-overlay": "6.0.9"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "eslintConfig": {
     "extends": [

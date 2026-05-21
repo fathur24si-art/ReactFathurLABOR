@@ -24,7 +24,7 @@ import {
 // Custom components
 import IconBox from "components/icons/IconBox";
 import { HorizonLogo } from "components/icons/Icons";
-import { SidebarResponsive } from "components/sidebar/Sidebar";
+import { SidebarResponsive } from "components/sidebar";
 import { SidebarContext } from "contexts/SidebarContext";
 
 // Assets

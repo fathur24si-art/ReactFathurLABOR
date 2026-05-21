@@ -1,8 +1,8 @@
 import { Portal, Box, useDisclosure, useColorModeValue } from "@chakra-ui/react";
 import Footer from "components/footer/FooterAdmin.jsx";
 import Navbar from "components/navbar/NavbarAdmin.jsx";
-import Sidebar from "components/sidebar/Sidebar.jsx";
-import { SidebarContext } from "contexts/SidebarContext.jsx";
+import Sidebar from "components/sidebar";
+import { SidebarContext, SidebarProvider } from "contexts/SidebarContext.jsx";
 import React, { useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import routes, { errorRoutes } from "../../../routes.jsx";
@@ -22,20 +22,28 @@ export default function Dashboard(props) {
     "radial-gradient(circle at top right, rgba(251,146,60,0.14), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.12), transparent 32%), #0F172A"
   );
 
+  const flattenRoutes = (routesList) => {
+    return routesList.flatMap((route) =>
+      route.category ? route.items : route
+    );
+  };
+
   const getActiveRoute = (routesList) => {
+    const flattenedRoutes = flattenRoutes(routesList);
     let activeRoute = "Dashboard";
 
-    for (let i = 0; i < routesList.length; i++) {
-      const fullPath = routesList[i].layout + routesList[i].path;
+    for (let i = 0; i < flattenedRoutes.length; i++) {
+      const route = flattenedRoutes[i];
+      const fullPath = route.layout + route.path;
 
-      if (routesList[i].path.includes(":")) {
+      if (route.path.includes(":")) {
         const basePath = fullPath.split(":")[0];
 
         if (location.pathname.startsWith(basePath)) {
-          return routesList[i].name;
+          return route.name;
         }
       } else if (location.pathname === fullPath) {
-        return routesList[i].name;
+        return route.name;
       }
     }
 
@@ -43,7 +51,9 @@ export default function Dashboard(props) {
   };
 
   const getRoutes = (routesList) => {
-    return routesList.map((route, key) => {
+    const flattenedRoutes = flattenRoutes(routesList);
+
+    return flattenedRoutes.map((route, key) => {
       if (route.layout === "/admin") {
         return <Route path={`${route.path}`} element={route.component} key={key} />;
       }
@@ -57,7 +67,7 @@ export default function Dashboard(props) {
 
   return (
     <Box bg={bgPage} minH="100vh">
-      <SidebarContext.Provider
+      <SidebarProvider
         value={{
           toggleSidebar,
           setToggleSidebar,
@@ -114,7 +124,7 @@ export default function Dashboard(props) {
             <Footer />
           </Box>
         </Box>
-      </SidebarContext.Provider>
+      </SidebarProvider>
     </Box>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Flex, Heading, Text, VStack } from "@chakra-ui/react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "components/sidebar/Sidebar";
+import Sidebar from "components/sidebar";
 import AdminNavbar from "components/navbar/NavbarAdmin";
 import routes from "../routes";
 

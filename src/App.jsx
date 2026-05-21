@@ -42,7 +42,7 @@ export default function Main() {
 
 
           <Route element={<MainLayout />}>
-            <Route path="/" element={<Navigate to="/beranda" replace />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/beranda" element={<DasborRestoran />} />
             <Route path="/pesanan" element={<PesananPelanggan />} />
             <Route path="/pelanggan" element={<DaftarPelanggan />} />

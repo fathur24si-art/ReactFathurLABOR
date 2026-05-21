@@ -26,7 +26,7 @@ export default function DasborRestoran() {
   const tooltipBg = useColorModeValue("gray.900", "white");
   const tooltipColor = useColorModeValue("white", "gray.900");
 
-  const [period, setPeriod] = useState("week"); // week, month
+  const [period, setPeriod] = useState("week"); 
   const [hoveredBar, setHoveredBar] = useState(null);
 
   // Functional sales data with state

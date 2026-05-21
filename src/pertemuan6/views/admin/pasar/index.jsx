@@ -1,11 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Text,
   SimpleGrid,
-  Badge,
   useColorModeValue,
   Flex,
+  Spinner,
   Button,
   Modal,
   ModalOverlay,
@@ -17,7 +17,7 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
+  Textarea,
   useDisclosure,
   useToast,
   IconButton,
@@ -29,8 +29,6 @@ import {
   AlertDialogFooter,
   InputGroup,
   InputLeftElement,
-  Tag,
-  TagLabel,
   HStack,
   Divider,
   Stat,
@@ -39,6 +37,9 @@ import {
   Image,
 } from "@chakra-ui/react";
 import PageHeader from "components/pageHeader/PageHeader.jsx";
+import PrimaryButton from "components/ui/PrimaryButton.jsx";
+import PanelCard from "components/ui/PanelCard.jsx";
+import { supabase } from "../../../../utils/supabase.js";
 import {
   MdAdd,
   MdSearch,
@@ -52,62 +53,51 @@ const defaultMenuItems = [
   {
     id: 1,
     name: "Nasi Goreng Rustaf",
-    kategori: "Makanan",
     harga: "35000",
-    status: "Tersedia",
+    deskripsi: "Nasi goreng spesial dengan telur, ayam, dan sayuran.",
     image: "",
   },
   {
     id: 2,
     name: "Ayam Bakar Madu",
-    kategori: "Makanan",
     harga: "45000",
-    status: "Tersedia",
+    deskripsi: "Ayam bakar dengan saus madu manis dan wangi.",
     image: "",
   },
   {
     id: 3,
     name: "Es Teh Manis",
-    kategori: "Minuman",
     harga: "8000",
-    status: "Tersedia",
+    deskripsi: "Teh manis dingin untuk menyegarkan hari Anda.",
     image: "",
   },
   {
     id: 4,
     name: "Jus Alpukat",
-    kategori: "Minuman",
     harga: "15000",
-    status: "Habis",
+    deskripsi: "Jus alpukat creamy dengan sedikit gula dan susu.",
     image: "",
   },
   {
     id: 5,
     name: "Sate Ayam 10 Tusuk",
-    kategori: "Makanan",
     harga: "30000",
-    status: "Tersedia",
+    deskripsi: "Sate ayam lezat dengan bumbu kacang khas restoran.",
     image: "",
   },
   {
     id: 6,
     name: "Kopi Hitam",
-    kategori: "Minuman",
     harga: "12000",
-    status: "Tersedia",
+    deskripsi: "Kopi hitam murni dengan aroma panggang yang pekat.",
     image: "",
   },
 ];
 
-const categoryColor = {
-  Makanan: "orange",
-  Minuman: "teal",
-};
-
 export default function MenuMakanan() {
-  const [menu, setMenu] = useState(defaultMenuItems);
+  const [menu, setMenu] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterKategori, setFilterKategori] = useState("Semua");
+  const [hasFetched, setHasFetched] = useState(false);
 
   const {
     isOpen: isFormOpen,
@@ -135,11 +125,108 @@ export default function MenuMakanan() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
-    kategori: "Makanan",
     harga: "",
-    status: "Tersedia",
+    deskripsi: "",
     image: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageColumn, setImageColumn] = useState(
+    import.meta.env.VITE_SUPABASE_MENU_IMAGE_COLUMN || "image"
+  );
+
+  const MENU_TABLE = import.meta.env.VITE_SUPABASE_MENU_TABLE || "menu";
+
+  const isMissingColumnError = (error, column) => {
+    const msg = error?.message?.toLowerCase() || "";
+    return (
+      msg.includes(`column \"${column}\"`) ||
+      msg.includes(`column '${column}'`) ||
+      msg.includes(`column ${column}`) ||
+      msg.includes(`could not find the '${column}' column`) ||
+      msg.includes(`could not find the \"${column}\" column`)
+    );
+  };
+
+  const buildMenuPayload = () => {
+    const payload = {
+      nama: formData.name,
+      harga: Number(formData.harga) || 0,
+      deskripsi: formData.deskripsi,
+    };
+
+    if (formData.image && imageColumn) {
+      payload[imageColumn] = formData.image;
+    }
+
+    return payload;
+  };
+
+  const isMissingTableError = (error) => {
+    const msg = error?.message?.toLowerCase() || "";
+    return (
+      msg.includes("could not find the table") ||
+      msg.includes(`relation \"public.${MENU_TABLE}\"`.toLowerCase()) ||
+      msg.includes(`table 'public.${MENU_TABLE}'`) ||
+      error?.code === "42P01"
+    );
+  };
+
+  const isRowLevelSecurityError = (error) => {
+    const msg = error?.message?.toLowerCase() || "";
+    return (
+      msg.includes("row-level security") ||
+      msg.includes("policy") ||
+      msg.includes("permission denied") ||
+      msg.includes("abort due to policy")
+    );
+  };
+
+  const fetchMenuItems = async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from(MENU_TABLE)
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Supabase fetch menu error:", error);
+      const message = isMissingTableError(error)
+        ? `Tabel Supabase '${MENU_TABLE}' tidak ditemukan. Pastikan tabel ada dan/atau set VITE_SUPABASE_MENU_TABLE di .env.`
+        : isRowLevelSecurityError(error)
+        ? `Row-level security aktif. Buat policy SELECT untuk tabel '${MENU_TABLE}' di Supabase atau gunakan user yang diizinkan.`
+        : "Tidak bisa mengambil data menu dari Supabase.";
+      toast({
+        title: "Supabase error",
+        description: message,
+        status: "warning",
+      });
+      setMenu(defaultMenuItems);
+    } else if (data) {
+      setMenu(
+        data.map((item) => ({
+          id: item.id,
+          name: item.nama ?? "",
+          harga: item.harga?.toString() ?? "",
+          deskripsi: item.deskripsi ?? "",
+          image: item.image ?? item.gambar ?? "",
+        }))
+      );
+    }
+
+    setHasFetched(true);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchMenuItems();
+
+    const handleFocus = () => {
+      fetchMenuItems();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [MENU_TABLE]);
 
   const pageBg = useColorModeValue("#F8FAFC", "#0F172A");
   const cardBg = useColorModeValue("rgba(255,255,255,0.92)", "rgba(15,23,42,0.86)");
@@ -149,17 +236,12 @@ export default function MenuMakanan() {
   const borderColor = useColorModeValue("gray.100", "whiteAlpha.200");
 
   const filteredMenu = menu.filter((item) => {
-    const matchSearch = item.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchCat = filterKategori === "Semua" || item.kategori === filterKategori;
-    return matchSearch && matchCat;
+    const text = `${item.name} ${item.deskripsi}`.toLowerCase();
+    return text.includes(searchQuery.toLowerCase());
   });
 
   const stats = {
     total: menu.length,
-    makanan: menu.filter((m) => m.kategori === "Makanan").length,
-    minuman: menu.filter((m) => m.kategori === "Minuman").length,
   };
 
   const handleOpenForm = (item = null) => {
@@ -167,18 +249,16 @@ export default function MenuMakanan() {
       setCurrentEdit(item.id);
       setFormData({
         name: item.name,
-        kategori: item.kategori,
         harga: item.harga,
-        status: item.status,
+        deskripsi: item.deskripsi,
         image: item.image || "",
       });
     } else {
       setCurrentEdit(null);
       setFormData({
         name: "",
-        kategori: "Makanan",
         harga: "",
-        status: "Tersedia",
+        deskripsi: "",
         image: "",
       });
     }
@@ -197,7 +277,7 @@ export default function MenuMakanan() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.harga) {
       toast({
         title: "Error",
@@ -207,17 +287,75 @@ export default function MenuMakanan() {
       return;
     }
 
+    const payload = buildMenuPayload();
+
     if (currentEdit) {
-      setMenu(
-        menu.map((m) => (m.id === currentEdit ? { ...m, ...formData } : m))
-      );
+      let { error } = await supabase
+        .from(MENU_TABLE)
+        .update(payload)
+        .eq("id", currentEdit);
+
+      if (
+        error &&
+        formData.image &&
+        imageColumn &&
+        isMissingColumnError(error, imageColumn)
+      ) {
+        const fallbackColumn = imageColumn === "image" ? "gambar" : "image";
+        setImageColumn(fallbackColumn);
+        const retryPayload = buildMenuPayload();
+        const retry = await supabase
+          .from(MENU_TABLE)
+          .update(retryPayload)
+          .eq("id", currentEdit);
+        error = retry.error;
+      }
+
+      if (error) {
+        const message = isRowLevelSecurityError(error)
+          ? `Row-level security aktif. Pastikan INSERT/UPDATE policy di tabel '${MENU_TABLE}' sudah dibuat pada Supabase.`
+          : error.message;
+        toast({
+          title: "Error Supabase",
+          description: message,
+          status: "error",
+        });
+        return;
+      }
+
       toast({
         title: "Berhasil",
         description: "Menu diperbarui.",
         status: "success",
       });
     } else {
-      setMenu([{ id: Date.now(), ...formData }, ...menu]);
+      let { error } = await supabase.from(MENU_TABLE).insert([payload]);
+
+      if (
+        error &&
+        formData.image &&
+        imageColumn &&
+        isMissingColumnError(error, imageColumn)
+      ) {
+        const fallbackColumn = imageColumn === "image" ? "gambar" : "image";
+        setImageColumn(fallbackColumn);
+        const retryPayload = buildMenuPayload();
+        const retry = await supabase.from(MENU_TABLE).insert([retryPayload]);
+        error = retry.error;
+      }
+
+      if (error) {
+        const message = isRowLevelSecurityError(error)
+          ? `Row-level security aktif. Pastikan INSERT/UPDATE policy di tabel '${MENU_TABLE}' sudah dibuat pada Supabase.`
+          : error.message;
+        toast({
+          title: "Error Supabase",
+          description: message,
+          status: "error",
+        });
+        return;
+      }
+
       toast({
         title: "Berhasil",
         description: "Menu baru ditambahkan.",
@@ -225,6 +363,7 @@ export default function MenuMakanan() {
       });
     }
 
+    await fetchMenuItems();
     onFormClose();
   };
 
@@ -233,8 +372,27 @@ export default function MenuMakanan() {
     onAlertOpen();
   };
 
-  const handleDelete = () => {
-    setMenu(menu.filter((m) => m.id !== deleteTarget.id));
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from(MENU_TABLE)
+      .delete()
+      .eq("id", deleteTarget.id);
+
+    if (error) {
+      const message = isMissingTableError(error)
+        ? `Tabel Supabase '${MENU_TABLE}' tidak ditemukan. Periksa konfigurasi .env atau nama tabel.`
+        : isRowLevelSecurityError(error)
+        ? `Row-level security aktif. Pastikan DELETE policy di tabel '${MENU_TABLE}' sudah dibuat pada Supabase.`
+        : error.message;
+      toast({
+        title: "Error Supabase",
+        description: message,
+        status: "error",
+      });
+      return;
+    }
+
+    await fetchMenuItems();
     onAlertClose();
 
     toast({
@@ -287,81 +445,56 @@ export default function MenuMakanan() {
             />
           </InputGroup>
 
-          <Button
+          <PrimaryButton
             leftIcon={<MdAdd />}
             bg="orange.400"
             color="white"
-            borderRadius="18px"
             h="46px"
-            fontWeight="800"
-            boxShadow="0 12px 24px rgba(251,146,60,.28)"
-            _hover={{ bg: "orange.500", transform: "translateY(-2px)" }}
             onClick={() => handleOpenForm()}
           >
             Tambah Menu
-          </Button>
+          </PrimaryButton>
         </Flex>
       </PageHeader>
 
-      <SimpleGrid columns={{ base: 1, md: 3 }} gap="20px" mb="22px">
-        {[
-          { label: "Total Menu", value: stats.total, color: "orange.400" },
-          { label: "Total Makanan", value: stats.makanan, color: "green.400" },
-          { label: "Total Minuman", value: stats.minuman, color: "teal.400" },
-        ].map((item, index) => (
-          <Box
-            key={index}
-            bg={cardBg}
-            border="1px solid"
-            borderColor={borderColor}
-            borderRadius="28px"
-            p="22px"
-            boxShadow="0 18px 40px rgba(15,23,42,0.08)"
-          >
-            <Stat>
-              <StatLabel color={subTextColor} fontWeight="800">
-                {item.label}
-              </StatLabel>
-              <StatNumber color={textColor} fontSize="34px" fontWeight="900">
-                {item.value}
-              </StatNumber>
-            </Stat>
-            <Box mt="12px" h="5px" w="64px" borderRadius="full" bg={item.color} />
-          </Box>
-        ))}
+      {isLoading && !hasFetched ? (
+        <Flex align="center" justify="center" minH="240px" mb="22px">
+          <Spinner size="xl" color="orange.400" />
+        </Flex>
+      ) : (
+        <>
+          <SimpleGrid columns={{ base: 1, md: 2 }} gap="20px" mb="22px">
+        {[{ label: "Total Menu", value: stats.total, color: "orange.400" }].map(
+          (item, index) => (
+            <PanelCard
+              key={index}
+              bg={cardBg}
+              borderColor={borderColor}
+              boxShadow="0 18px 40px rgba(15,23,42,0.08)"
+            >
+              <Stat>
+                <StatLabel color={subTextColor} fontWeight="800">
+                  {item.label}
+                </StatLabel>
+                <StatNumber color={textColor} fontSize="34px" fontWeight="900">
+                  {item.value}
+                </StatNumber>
+              </Stat>
+              <Box mt="12px" h="5px" w="64px" borderRadius="full" bg={item.color} />
+            </PanelCard>
+          )
+        )}
       </SimpleGrid>
 
-      <HStack spacing="10px" mb="22px" overflowX="auto" pb="4px">
-        {["Semua", "Makanan", "Minuman"].map((cat) => (
-          <Tag
-            key={cat}
-            size="lg"
-            borderRadius="full"
-            cursor="pointer"
-            px="18px"
-            py="10px"
-            bg={filterKategori === cat ? "orange.400" : cardBg}
-            color={filterKategori === cat ? "white" : textColor}
-            border="1px solid"
-            borderColor={filterKategori === cat ? "orange.400" : borderColor}
-            boxShadow={filterKategori === cat ? "0 10px 24px rgba(251,146,60,.25)" : "none"}
-            onClick={() => setFilterKategori(cat)}
-          >
-            <TagLabel fontWeight="800">{cat}</TagLabel>
-          </Tag>
-        ))}
-      </HStack>
 
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} gap="22px">
         {filteredMenu.map((item) => (
-          <Box
+          <PanelCard
             key={item.id}
             bg={cardBg}
-            border="1px solid"
             borderColor={borderColor}
-            borderRadius="32px"
-            overflow="hidden"
             boxShadow="0 20px 50px rgba(15,23,42,0.08)"
+            overflow="hidden"
             _hover={{ transform: "translateY(-5px)" }}
             transition="all .25s ease"
           >
@@ -384,41 +517,18 @@ export default function MenuMakanan() {
                 </Flex>
               )}
 
-              <Badge
-                position="absolute"
-                top="14px"
-                right="14px"
-                colorScheme={item.status === "Tersedia" ? "green" : "red"}
-                borderRadius="full"
-                px="12px"
-                py="6px"
-                boxShadow="lg"
-              >
-                {item.status}
-              </Badge>
             </Box>
 
             <Box p="22px">
-              <Flex justify="space-between" align="start" gap="12px" mb="18px">
-                <Box>
-                  <Text fontWeight="900" color={textColor} fontSize="lg">
-                    {item.name}
-                  </Text>
-                  <Badge
-                    colorScheme={categoryColor[item.kategori]}
-                    variant="subtle"
-                    borderRadius="full"
-                    px="10px"
-                    mt="8px"
-                  >
-                    {item.kategori}
-                  </Badge>
-                </Box>
-
-                <Text fontWeight="900" color="orange.400" fontSize="lg">
-                  {formatIDR(item.harga)}
-                </Text>
-              </Flex>
+              <Text fontWeight="900" color={textColor} fontSize="lg" mb="4">
+                {item.name}
+              </Text>
+              <Text color={subTextColor} mb="18px" noOfLines={2}>
+                {item.deskripsi}
+              </Text>
+              <Text fontWeight="900" color="orange.400" fontSize="lg" mb="18px">
+                {formatIDR(item.harga)}
+              </Text>
 
               <Flex justify="space-between" align="center" wrap="wrap" gap="10px">
                 <Button
@@ -456,9 +566,11 @@ export default function MenuMakanan() {
                 </HStack>
               </Flex>
             </Box>
-          </Box>
+          </PanelCard>
         ))}
       </SimpleGrid>
+        </>
+      )}
 
       <Modal isOpen={isDetailOpen} onClose={closeDetail} isCentered size="lg">
         <ModalOverlay backdropFilter="blur(8px)" />
@@ -509,26 +621,9 @@ export default function MenuMakanan() {
                   {detailItem.name}
                 </Text>
 
-                <HStack spacing="10px" mb="5" flexWrap="wrap">
-                  <Badge
-                    colorScheme={categoryColor[detailItem.kategori]}
-                    borderRadius="full"
-                    px="12px"
-                    py="5px"
-                    fontWeight="800"
-                  >
-                    {detailItem.kategori}
-                  </Badge>
-                  <Badge
-                    colorScheme={detailItem.status === "Tersedia" ? "green" : "red"}
-                    borderRadius="full"
-                    px="12px"
-                    py="5px"
-                    fontWeight="800"
-                  >
-                    {detailItem.status}
-                  </Badge>
-                </HStack>
+                <Text color={subTextColor} mb="5">
+                  {detailItem.deskripsi}
+                </Text>
 
                 <Divider borderColor={borderColor} mb="5" />
 
@@ -615,51 +710,31 @@ export default function MenuMakanan() {
               />
             </FormControl>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} gap="4">
-              <FormControl>
-                <FormLabel fontWeight="800">Kategori</FormLabel>
-                <Select
-                  borderRadius="16px"
-                  value={formData.kategori}
-                  onChange={(e) =>
-                    setFormData({ ...formData, kategori: e.target.value })
-                  }
-                >
-                  <option value="Makanan">Makanan</option>
-                  <option value="Minuman">Minuman</option>
-                </Select>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel fontWeight="800">Status</FormLabel>
-                <Select
-                  borderRadius="16px"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
-                >
-                  <option value="Tersedia">Tersedia</option>
-                  <option value="Habis">Habis</option>
-                </Select>
-              </FormControl>
-            </SimpleGrid>
+            <FormControl mb="4">
+              <FormLabel fontWeight="800">Deskripsi</FormLabel>
+              <Textarea
+                borderRadius="16px"
+                value={formData.deskripsi}
+                onChange={(e) =>
+                  setFormData({ ...formData, deskripsi: e.target.value })
+                }
+              />
+            </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button borderRadius="16px" onClick={onFormClose}>
+            <PrimaryButton variant="outline" onClick={onFormClose}>
               Batal
-            </Button>
-            <Button
+            </PrimaryButton>
+            <PrimaryButton
               bg="orange.400"
               color="white"
-              borderRadius="16px"
               ml={3}
               _hover={{ bg: "orange.500" }}
               onClick={handleSave}
             >
               Simpan
-            </Button>
+            </PrimaryButton>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -678,17 +753,19 @@ export default function MenuMakanan() {
               <b>{deleteTarget?.name}</b>?
             </AlertDialogBody>
             <AlertDialogFooter>
-              <Button ref={cancelRef} borderRadius="16px" onClick={onAlertClose}>
+              <PrimaryButton variant="outline" ref={cancelRef} onClick={onAlertClose}>
                 Batal
-              </Button>
-              <Button
+              </PrimaryButton>
+              <PrimaryButton
                 colorScheme="red"
-                borderRadius="16px"
-                onClick={handleDelete}
+                bg="red.400"
+                color="white"
                 ml={3}
+                _hover={{ bg: "red.500" }}
+                onClick={handleDelete}
               >
                 Hapus
-              </Button>
+              </PrimaryButton>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialogOverlay>

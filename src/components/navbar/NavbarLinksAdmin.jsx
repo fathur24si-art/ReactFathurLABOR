@@ -13,7 +13,7 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import { SearchBar } from "./searchBar/SearchBar.jsx";
-import { SidebarResponsive } from "../sidebar/Sidebar.jsx";
+import { SidebarResponsive } from "components/sidebar";
 import PropTypes from "prop-types";
 import React from "react";
 import { MdNotificationsNone } from "react-icons/md";

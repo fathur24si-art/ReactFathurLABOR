@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { Icon } from '@chakra-ui/react';
 import {
   MdHome,
@@ -6,6 +6,7 @@ import {
   MdListAlt,
   MdPeople,
   MdAssessment,
+  MdExtension,
 } from 'react-icons/md';
 
 // Admin Imports
@@ -14,6 +15,7 @@ import MenuMakanan from 'pertemuan6/views/admin/pasar';
 import PesananPelanggan from 'pertemuan6/views/admin/tabel-data';
 import DaftarPelanggan from 'pertemuan6/views/admin/profil';
 import LaporanRestoran from 'pertemuan6/views/admin/laporan';
+const FiturXYZ = lazy(() => import('pertemuan6/views/admin/fiturXYZ'));
 import ErrorView from 'pertemuan6/views/admin/error';
 
 const routes = [
@@ -61,6 +63,13 @@ const routes = [
         path: "/pelanggan",
         icon: <Icon as={MdPeople} width="20px" height="20px" color="inherit" />,
         component: <DaftarPelanggan />,
+      },
+      {
+        name: "Fitur XYZ",
+        layout: "/admin",
+        path: "/fitur-xyz",
+        icon: <Icon as={MdExtension} width="20px" height="20px" color="inherit" />,
+        component: <FiturXYZ />,
       },
     ],
   },
